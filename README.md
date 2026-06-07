@@ -65,12 +65,26 @@ Internal Network Resources
 
 ## Technologies Used
 
+* Terraform
 * WireGuard
 * AWS EC2
 * Ubuntu Linux
 * iptables
 * Linux networking
 * Bash scripting
+
+---
+
+## Infrastructure as Code
+
+The project includes a modular Terraform structure for provisioning AWS infrastructure components including:
+
+* EC2 VPN gateway instances
+* Security groups
+* Network access configuration
+* Future extensibility for VPC and subnet automation
+
+Terraform was chosen to support reproducible infrastructure deployments and infrastructure-as-code practices commonly used in enterprise cloud environments.
 
 ---
 
@@ -117,6 +131,14 @@ Traffic forwarding is enabled through Linux IP forwarding and NAT masquerading.
 * Multi-region VPN deployment
 * High availability failover nodes
 
+---
+
+## Screenshots
+
+![](./screenshots/EC2.png)
+![](./screenshots/QR.png)
+![](./screenshots/client.png)
+![](./screenshots/logs.png)
 ---
 
 ## Disclaimer
