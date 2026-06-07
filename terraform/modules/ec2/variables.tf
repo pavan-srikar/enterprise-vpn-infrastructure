@@ -1,11 +1,11 @@
 variable "instance_type" {
-type = string
+  type = string
 }
 
 variable "key_name" {
-type = string
+  type = string
 }
 
 variable "security_group_id" {
-type = string
+  type = string
 }
