@@ -1,5 +1,3 @@
-# .github/workflows/ci.yml
-
 name: Infrastructure Validation
 
 on:
@@ -19,6 +17,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
       - name: Validate Bash Scripts
         run: |
           bash -n scripts/setup-wireguard.sh
@@ -34,7 +35,7 @@ jobs:
           test -d terraform
 
       - name: Terraform Format Check
-        run: terraform fmt -check
+        run: terraform fmt -check -recursive
         working-directory: terraform
 
       - name: Infrastructure Validation Complete
