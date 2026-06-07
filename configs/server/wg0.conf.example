@@ -1,0 +1,17 @@
+# configs/server/wg0.conf.example
+
+[Interface]
+PrivateKey = YOUR_SERVER_PRIVATE_KEY
+Address = 10.0.0.1/24
+ListenPort = 51820
+
+# Enable NAT routing
+
+PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+# Example peer configuration
+
+[Peer]
+PublicKey = CLIENT_PUBLIC_KEY
+AllowedIPs = 10.0.0.2/32

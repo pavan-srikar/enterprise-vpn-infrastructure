@@ -1,0 +1,38 @@
+# .github/workflows/ci.yml
+
+name: Infrastructure Validation
+
+on:
+push:
+branches:
+- main
+
+pull_request:
+branches:
+- main
+
+jobs:
+validate:
+runs-on: ubuntu-latest
+
+```
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
+
+  - name: Validate Bash Scripts
+    run: |
+      bash -n scripts/setup-wireguard.sh
+      bash -n scripts/add-peer.sh
+      bash -n scripts/generate-qr.sh
+
+  - name: Verify Repository Structure
+    run: |
+      test -f README.md
+      test -d docs
+      test -d scripts
+      test -d configs
+
+  - name: Infrastructure Validation Complete
+    run: echo "Validation successful."
+```
