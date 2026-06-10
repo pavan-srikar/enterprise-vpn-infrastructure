@@ -2,6 +2,8 @@ resource "aws_security_group" "vpn_sg" {
   name        = "enterprise-vpn-sg"
   description = "Security group for WireGuard VPN infrastructure"
 
+  vpc_id = var.vpc_id
+
   ingress {
     description = "WireGuard VPN"
     from_port   = var.vpn_port
