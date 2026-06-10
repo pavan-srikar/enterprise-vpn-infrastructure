@@ -1,17 +1,23 @@
-# scripts/generate-qr.sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-#!/bin/bash
+CONFIG_FILE="${1:-}"
 
-CONFIG_FILE=$1
-
-if [ -z "$CONFIG_FILE" ]; then
-echo "Usage: ./generate-qr.sh <client-config>"
-echo "Example: ./generate-qr.sh peers/developer-laptop/client.conf"
-exit 1
+if [[ -z "$CONFIG_FILE" ]]; then
+  echo "Usage: ./generate-qr.sh <client-config>"
+  echo "Example: ./generate-qr.sh /etc/wireguard/peers/dev/client.conf"
+  exit 1
 fi
 
-echo "Generating QR code for mobile onboarding..."
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "[!] File not found: $CONFIG_FILE"
+  exit 1
+fi
 
-qrencode -t ansiutf8 < $CONFIG_FILE
+echo "[+] Generating QR code..."
 
-echo "QR generation complete."
+# Terminal QR (safe)
+qrencode -t ansiutf8 < "$CONFIG_FILE"
+
+echo ""
+echo "[✓] QR generation complete"
