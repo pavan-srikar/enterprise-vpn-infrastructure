@@ -62,33 +62,37 @@ The VPN network uses the private subnet:
 
 Supported routing modes:
 
-#### Split Tunnel: `AllowedIPs = 10.0.0.0/24`
+### Split Tunnel: `AllowedIPs = 10.0.0.0/24`
 Only VPN network traffic is routed through WireGuard.
 
 Example:
+```
 10.0.0.1  -> VPN Server
 10.0.0.2  -> Mobile Device
 10.0.0.3  -> Laptop
+```
 
 Internet traffic continues to use the client's normal connection.
 
-#### Enterprise Mode `AllowedIPs = 10.0.0.0/16`
+### Enterprise Mode `AllowedIPs = 10.0.0.0/16`
 Routes an entire private enterprise network through the VPN.
 
 Example:
+```
 10.0.0.x  -> VPN Infrastructure
 10.0.1.x  -> Applications
 10.0.2.x  -> Databases
 10.0.3.x  -> Monitoring
+```
 
-#### Full Tunnel `AllowedIPs = 0.0.0.0/0`
+### Full Tunnel `AllowedIPs = 0.0.0.0/0`
 Routes all internet traffic through the VPN gateway.
 
 ## Validation
 
 The VPN was validated using a mobile WireGuard client.
 
-### Testing confirmed:
+#### Testing confirmed:
 
 - Successful VPN peer onboarding via QR code
 - Secure client-to-server communication
