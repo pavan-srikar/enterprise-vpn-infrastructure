@@ -2,19 +2,28 @@
 ![VPN](https://img.shields.io/badge/VPN-WireGuard-blue)
 ![OS](https://img.shields.io/badge/OS-Ubuntu-green)
 ![Status](https://img.shields.io/badge/status-Active-success)
+
 # Enterprise VPN Infrastructure
 
-Enterprise-style WireGuard VPN infrastructure deployed on AWS to provide secure remote access to internal services, protected network environments, and private infrastructure resources.
-
----
+Enterprise-style WireGuard VPN deployed on AWS to provide secure remote access to private infrastructure and internal services.
 
 ## Overview
 
-This project simulates a production-inspired enterprise VPN environment where remote users securely connect to internal company resources through encrypted WireGuard tunnels hosted on AWS.
+The goal is to simulate a real-world remote access solution where authenticated users can securely connect to internal resources through encrypted VPN tunnels instead of exposing services directly to the public internet.
 
-The infrastructure was designed with security, network isolation, and future extensibility in mind, including support for planned enterprise features such as split tunneling, internal DNS resolution, infrastructure automation, centralized monitoring, and security hardening.
+The project includes automated VPN deployment, peer provisioning, QR-based onboarding, and configurable routing policies supporting split-tunnel and full-tunnel connectivity.
 
----
+## Traffic 
+
+```
+Remote Device
+↓
+WireGuard VPN Tunnel
+↓
+AWS EC2 VPN Gateway
+↓
+Private Network Resources
+```
 
 ![Infrastructure](./diagrams/VPN-Infrastructure.png)
 
@@ -22,104 +31,88 @@ The infrastructure was designed with security, network isolation, and future ext
 
 ### Implemented
 
-* WireGuard VPN deployment on AWS EC2
-* Secure encrypted remote access
-* Multi-device connectivity
-* Linux-based networking stack
-* NAT configuration using iptables
-* IP forwarding
-* Peer-based access management
+* Automated WireGuard deployment on AWS EC2
+* Secure encrypted VPN connectivity
+* Automated peer provisioning
 * QR-based mobile onboarding
-* Ubuntu server deployment
+* Dynamic network interface detection
+* Automatic server public IP discovery
+* Linux IP forwarding configuration
+* NAT configuration using iptables
+* Split Tunnel routing support (10.0.0.0/24)
+* Enterprise Network routing support (10.0.0.0/16)
+* Full Tunnel routing support (0.0.0.0/0)
+* Multi-device connectivity
+* Peer-based access control
 
-### Planned Enterprise Features
-
-* Split tunneling support
+### In Progress
 * Internal DNS resolution
-* Terraform infrastructure provisioning
-* Automated peer lifecycle management
-* Monitoring dashboards with Grafana/Prometheus
-* Bastion-style internal resource access
+* Terraform-based infrastructure provisioning
+* Grafana and Prometheus monitoring
 * Security hardening automation
-* Infrastructure-as-Code deployment workflows
-
----
-
-## Architecture
-
-Remote users connect securely to the AWS-hosted VPN gateway through encrypted WireGuard tunnels.
-
-Internal resources are intended to remain inaccessible from the public internet and only reachable through authenticated VPN peers.
-
-### High-Level Flow
-
-Remote Device
-↓
-WireGuard Tunnel
-↓
-AWS EC2 VPN Gateway
-↓
-Internal Network Resources
-
----
-
-## Technologies Used
-
-* Terraform
-* WireGuard
-* AWS EC2
-* Ubuntu Linux
-* iptables
-* Linux networking
-* Bash scripting
-
----
-
-## Infrastructure as Code
-
-The project includes a modular Terraform structure for provisioning AWS infrastructure components including:
-
-* EC2 VPN gateway instances
-* Security groups
-* Network access configuration
-* Future extensibility for VPC and subnet automation
-
-Terraform was chosen to support reproducible infrastructure deployments and infrastructure-as-code practices commonly used in enterprise cloud environments.
+* Bastion-style internal access workflows
 
 ---
 
 ## Networking
 
-The VPN uses a private internal subnet:
+The VPN network uses the private subnet:
 
-Server → 10.0.0.1
-Clients → 10.0.0.x
+`VPN Server : 10.0.0.1`
+`Clients    : 10.0.0.x`
 
-Traffic forwarding is enabled through Linux IP forwarding and NAT masquerading.
+Supported routing modes:
 
----
+#### Split Tunnel: `AllowedIPs = 10.0.0.0/24`
+Only VPN network traffic is routed through WireGuard.
 
-## Security Considerations
+Example:
+10.0.0.1  -> VPN Server
+10.0.0.2  -> Mobile Device
+10.0.0.3  -> Laptop
 
-* Key-based authentication
-* Encrypted WireGuard tunnels
-* Controlled peer access
-* Internal-only network design
-* Firewall-based traffic routing
-* AWS security group restrictions
-* Planned SSH hardening and access isolation
+Internet traffic continues to use the client's normal connection.
 
----
+#### Enterprise Mode `AllowedIPs = 10.0.0.0/16`
+Routes an entire private enterprise network through the VPN.
+
+Example:
+10.0.0.x  -> VPN Infrastructure
+10.0.1.x  -> Applications
+10.0.2.x  -> Databases
+10.0.3.x  -> Monitoring
+
+#### Full Tunnel `AllowedIPs = 0.0.0.0/0`
+Routes all internet traffic through the VPN gateway.
+
+## Validation
+
+The VPN was validated using a mobile WireGuard client.
+
+### Testing confirmed:
+
+- Successful VPN peer onboarding via QR code
+- Secure client-to-server communication
+- Split tunnel functionality
+- Access to an internal HTTP service hosted on the VPN server
+- WireGuard peer handshakes and traffic transfer verification
+
+## Technologies Used
+- AWS EC2
+- WireGuard
+- Ubuntu Linux
+- Bash
+- iptables
+- Linux Networking
+- Terraform (Infrastructure as Code)
 
 ## Example Use Cases
-
-* Secure employee remote access
-* Internal dashboard access
-* Private infrastructure connectivity
-* Bastion-style administration access
-* Secure development environment access
-
----
+- Secure employee remote access
+- Internal dashboard access
+- Private application access
+- Infrastructure administration
+- Development environment connectivity
+- VPN gateway proof-of-concept deployments
 
 ## Future Improvements
 
@@ -131,15 +124,12 @@ Traffic forwarding is enabled through Linux IP forwarding and NAT masquerading.
 * Multi-region VPN deployment
 * High availability failover nodes
 
----
-
 ## Screenshots
 
 ![](./screenshots/EC2.png)
+![](./screenshots/setup.png)
 ![](./screenshots/QR.png)
-![](./screenshots/client.png)
-![](./screenshots/logs.png)
----
+![](./screenshots/Split_Tunnel.png)
 
 ## Disclaimer
 
