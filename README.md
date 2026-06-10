@@ -47,7 +47,6 @@ Private Network Resources
 
 ### In Progress
 * Internal DNS resolution
-* Terraform-based infrastructure provisioning
 * Grafana and Prometheus monitoring
 * Security hardening automation
 * Bastion-style internal access workflows
