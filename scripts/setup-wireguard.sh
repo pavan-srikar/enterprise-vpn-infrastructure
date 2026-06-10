@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
+
+echo ""
+echo "====================================================="
+echo "      Enterprise VPN Infrastructure Installer"
+echo "====================================================="
+echo ""
+
 set -euo pipefail
+
+if [[ $EUID -ne 0 ]]; then
+    echo "[ERROR] Please run as root."
+    echo ""
+    echo "Example:"
+    echo "  sudo ./scripts/setup-wireguard.sh"
+    echo ""
+    exit 1
+fi
 
 echo "[+] Updating packages..."
 apt update -y
@@ -12,7 +28,15 @@ apt install -y wireguard wireguard-tools qrencode iptables
 # -----------------------------
 OUT_IF=$(ip route | awk '/default/ {print $5}')
 
-echo "[+] Detected outbound interface: $OUT_IF"
+echo ""
+echo "Network Information"
+echo "-----------------------------------------------------"
+echo "Outbound Interface : $OUT_IF"
+echo "VPN Network        : 10.0.0.0/24"
+echo "VPN Server Address : 10.0.0.1"
+echo "WireGuard Port     : 51820"
+echo "-----------------------------------------------------"
+echo ""
 
 # -----------------------------
 # Enable IP forwarding (persistent)
@@ -84,8 +108,41 @@ systemctl restart wg-quick@wg0
 # Verify
 # -----------------------------
 echo "[+] Checking status..."
-wg show wg0 || true
+if wg show wg0 >/dev/null 2>&1; then
+    echo "[✓] WireGuard interface is running."
+else
+    echo "[ERROR] WireGuard failed to start."
+    exit 1
+fi
 
-echo "[✓] WireGuard setup complete!"
-echo "[✓] Server public key: ${SERVER_PUBLIC}"
-echo "[✓] Interface: wg0 running on port 51820"
+echo ""
+echo "====================================================="
+echo "              Installation Complete"
+echo "====================================================="
+echo ""
+echo "WireGuard Interface"
+echo "  Name     : wg0"
+echo "  Address  : 10.0.0.1/24"
+echo "  Port     : 51820"
+echo ""
+echo "Generated Files"
+echo "  Config       : /etc/wireguard/wg0.conf"
+echo "  Private Key  : /etc/wireguard/keys/server_private.key"
+echo "  Public Key   : /etc/wireguard/keys/server_public.key"
+echo ""
+echo "Server Public Key"
+echo "  $SERVER_PUBLIC"
+echo ""
+echo "Next Steps"
+echo ""
+echo "  Create a peer:"
+echo "    sudo ./scripts/add-peer.sh phone 10.0.0.2 split"
+echo ""
+echo "  Generate QR code:"
+echo "    sudo ./scripts/generate-qr.sh /etc/wireguard/peers/phone/client.conf"
+echo ""
+echo "  Show VPN status:"
+echo "    sudo wg show"
+echo ""
+echo "====================================================="
+echo ""
