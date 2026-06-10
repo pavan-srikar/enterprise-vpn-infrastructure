@@ -121,7 +121,6 @@ The VPN was validated using a mobile WireGuard client.
 
 * Internal DNS routing
 * Split-tunnel optimization
-* Automated provisioning using Terraform
 * Peer onboarding automation
 * Monitoring and traffic analytics
 * Multi-region VPN deployment
