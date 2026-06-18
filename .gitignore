@@ -2,10 +2,12 @@
 *.key
 *.pem
 *.conf
-!*.example
+!*.example.conf
 
 # Environment files
 .env
+.env.*
+!.env.example
 
 # Logs
 *.log
@@ -14,7 +16,15 @@
 .terraform/
 *.tfstate
 *.tfstate.backup
+*.tfvars
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+crash.*.log
 
-# Linux
+# OS
 .DS_Store
 Thumbs.db

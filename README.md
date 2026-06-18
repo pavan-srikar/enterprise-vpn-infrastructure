@@ -128,10 +128,10 @@ The VPN was validated using a mobile WireGuard client.
 
 ## Screenshots
 
-![](./screenshots/EC2.png)
-![](./screenshots/setup.png)
-![](./screenshots/QR.png)
-![](./screenshots/Split_Tunnel.png)
+![EC2](./screenshots/EC2.png)
+![setup](./screenshots/setup.png)
+![QR](./screenshots/QR.png)
+![split tunnel](./screenshots/Split_Tunnel.png)
 
 ## Disclaimer
 

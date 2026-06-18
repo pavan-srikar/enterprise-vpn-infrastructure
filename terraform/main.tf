@@ -5,7 +5,8 @@ module "vpn_vpc" {
 module "vpn_security_group" {
   source = "./modules/security-group"
 
-  vpc_id = module.vpn_vpc.vpc_id
+  vpc_id           = module.vpn_vpc.vpc_id
+  ssh_allowed_cidr = var.ssh_allowed_cidr # add this line
 }
 
 module "vpn_ec2" {

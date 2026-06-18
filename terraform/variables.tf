@@ -14,3 +14,8 @@ variable "key_name" {
   description = "SSH key pair name"
   type        = string
 }
+
+variable "ssh_allowed_cidr" {
+  description = "List of IPs allowed to SSH. Get your IP with: curl ifconfig.me"
+  type        = list(string)
+}
