@@ -102,11 +102,32 @@ PUBLIC_KEY=$(cat "$PEER_DIR/$PEER_NAME/public.key")
 
 SERVER_PUBLIC_KEY=$(cat "$WG_DIR/keys/server_public.key")
 
+# NEW
 echo "[+] Detecting public server IP..."
-SERVER_IP=$(curl -s ifconfig.me)
+
+SERVER_IP=""
+for endpoint in "https://ifconfig.me" "https://api.ipify.org" "https://checkip.amazonaws.com" "https://icanhazip.com"; do
+    candidate=$(curl -sf --max-time 5 "$endpoint" 2>/dev/null | tr -d '[:space:]')
+    if echo "$candidate" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        SERVER_IP="$candidate"
+        break
+    fi
+done
+
+# last resort: EC2 instance metadata (works natively on AWS)
+if [[ -z "$SERVER_IP" ]]; then
+    candidate=$(curl -sf --max-time 5 http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null | tr -d '[:space:]')
+    if echo "$candidate" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        SERVER_IP="$candidate"
+    fi
+fi
 
 if [[ -z "$SERVER_IP" ]]; then
-    echo "[ERROR] Unable to determine public IP."
+    echo "[ERROR] Could not detect public IP from any endpoint."
+    echo ""
+    echo "Set it manually and retry:"
+    echo "  export SERVER_IP=1.2.3.4"
+    echo "  sudo -E ./scripts/add-peer.sh $PEER_NAME $PEER_IP $MODE"
     exit 1
 fi
 
