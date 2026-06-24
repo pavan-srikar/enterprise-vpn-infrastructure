@@ -31,24 +31,20 @@ Private Network Resources
 
 ### Implemented
 
-* Automated WireGuard deployment on AWS EC2
-* Secure encrypted VPN connectivity
-* Automated peer provisioning
-* QR-based mobile onboarding
-* Dynamic network interface detection
-* Automatic server public IP discovery
-* Linux IP forwarding configuration
-* NAT configuration using iptables
-* Split Tunnel routing support (10.0.0.0/24)
-* Enterprise Network routing support (10.0.0.0/16)
-* Full Tunnel routing support (0.0.0.0/0)
-* Multi-device connectivity
-* Peer-based access control
+* WireGuard VPN deployed and configured on AWS EC2
+* Automated peer provisioning with QR-based mobile onboarding
+* Clean peer removal with live interface update and config cleanup
+* Split tunnel, enterprise, and full tunnel routing modes
+* Automatic public IP detection with multi-endpoint fallback
+* NAT and IP forwarding configured via iptables
+* SSH access restricted to allowlisted IPs with Terraform-level validation
+* S3 remote backend for Terraform state with versioning and encryption
+* CI pipeline with ShellCheck, Terraform validate, and secret leak detection
 
 ### In Progress
 * Internal DNS resolution
 * Grafana and Prometheus monitoring
-* Security hardening automation
+* GUI webpate to manage connections, metrics and dashboard 
 * Bastion-style internal access workflows
 
 ---
@@ -92,6 +88,20 @@ Routes all internet traffic through the VPN gateway.
 
 The VPN was validated using a mobile WireGuard client.
 
+## Infrastructure & Security
+
+### Terraform State Management
+Remote state is stored in an encrypted S3 bucket with versioning enabled.
+State is never stored locally or committed to the repository.
+
+### SSH Security
+SSH access is restricted to explicitly allowlisted IPs via Terraform security group rules.
+The configuration enforces this at the variable validation level — `0.0.0.0/0` is rejected at plan time.
+
+### Secrets Management
+- Private keys, `.pem` files, and `.tfvars` are excluded via `.gitignore`
+- CI pipeline scans for accidentally committed secrets on every push
+
 #### Testing confirmed:
 
 - Successful VPN peer onboarding via QR code
@@ -101,13 +111,14 @@ The VPN was validated using a mobile WireGuard client.
 - WireGuard peer handshakes and traffic transfer verification
 
 ## Technologies Used
-- AWS EC2
+- AWS EC2, S3
 - WireGuard
 - Ubuntu Linux
-- Bash
+- Bash, ShellCheck (bash linting)
 - iptables
 - Linux Networking
 - Terraform (Infrastructure as Code)
+- GitHub Actions (CI validation)
 
 ## Example Use Cases
 - Secure employee remote access
@@ -121,7 +132,6 @@ The VPN was validated using a mobile WireGuard client.
 
 * Internal DNS routing
 * Split-tunnel optimization
-* Peer onboarding automation
 * Monitoring and traffic analytics
 * Multi-region VPN deployment
 * High availability failover nodes
