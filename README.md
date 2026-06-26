@@ -13,6 +13,18 @@ This project demonstrates how an enterprise VPN gateway can be deployed and mana
 
 The project provisions AWS infrastructure using Terraform, automates VPN setup with Bash, supports multiple routing modes, and includes an observability stack powered by Prometheus and Grafana.
 
+## Quick Start (view instructions.md for detailed steps)
+
+```bash
+git clone https://github.com/pavan-srikar/enterprise-vpn-infrastructure.git
+cd enterprise-vpn-infrastructure
+
+terraform init
+terraform apply
+
+sudo ./scripts/setup-tf-backend.sh
+```
+
 ## Traffic 
 
 ```
@@ -225,10 +237,16 @@ The configuration enforces this at the variable validation level — `0.0.0.0/0`
 
 ## Screenshots
 
-![EC2](./screenshots/EC2.png)
+### Scripts to add and remove clients
 ![setup](./screenshots/setup.png)
+
+### Generating QR
 ![QR](./screenshots/QR.png)
+
+### Split Tunnel
 ![split tunnel](./screenshots/Split_Tunnel.png)
+
+### Grafana Dashboard 
 ![dashboard](./screenshots/Dashboard.png)
 
 ## Disclaimer
