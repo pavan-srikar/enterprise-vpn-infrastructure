@@ -9,43 +9,120 @@ Enterprise-style WireGuard VPN deployed on AWS to provide secure remote access t
 
 ## Overview
 
-The goal is to simulate a real-world remote access solution where authenticated users can securely connect to internal resources through encrypted VPN tunnels instead of exposing services directly to the public internet.
+This project demonstrates how an enterprise VPN gateway can be deployed and managed using Infrastructure as Code. Instead of exposing internal services to the internet, authenticated users connect through encrypted WireGuard tunnels to securely access private infrastructure.
 
-The project includes automated VPN deployment, peer provisioning, QR-based onboarding, and configurable routing policies supporting split-tunnel and full-tunnel connectivity.
+The project provisions AWS infrastructure using Terraform, automates VPN setup with Bash, supports multiple routing modes, and includes an observability stack powered by Prometheus and Grafana.
 
 ## Traffic 
 
 ```
-Remote Device
-↓
-WireGuard VPN Tunnel
-↓
-AWS EC2 VPN Gateway
-↓
-Private Network Resources
+Remote Device 
+│ 
+▼ 
+WireGuard VPN Tunnel 
+│ 
+▼ 
+AWS EC2 VPN Gateway 
+│ 
+├────────► Internal Services 
+├────────► Monitoring Stack 
+└────────► Private Resources
+```
+## Architecture
+
+```
+                Internet
+                    │
+                    ▼
+             AWS EC2 (Ubuntu)
+        ┌───────────────────────┐
+        │      WireGuard        │
+        │        wg0            │
+        ├───────────────────────┤
+        │  Node Exporter        │
+        │  Textfile Collector   │
+        │  Prometheus           │
+        │  Grafana              │
+        └───────────────────────┘
+                    │
+        VPN Clients (10.0.0.x)
 ```
 
 ![Infrastructure](./diagrams/VPN-Infrastructure.png)
 
 ## Features
 
-### Implemented
+### Infrastructure
 
-* WireGuard VPN deployed and configured on AWS EC2
-* Automated peer provisioning with QR-based mobile onboarding
-* Clean peer removal with live interface update and config cleanup
-* Split tunnel, enterprise, and full tunnel routing modes
-* Automatic public IP detection with multi-endpoint fallback
-* NAT and IP forwarding configured via iptables
-* SSH access restricted to allowlisted IPs with Terraform-level validation
-* S3 remote backend for Terraform state with versioning and encryption
-* CI pipeline with ShellCheck, Terraform validate, and secret leak detection
+- Terraform-based AWS deployment
+- Remote Terraform state stored in encrypted S3 with versioning
+- Automated EC2 provisioning
+- Security Groups managed entirely through Terraform
+- Fully reproducible infrastructure using Terraform
 
-### In Progress
-* Internal DNS resolution
-* Grafana and Prometheus monitoring
-* GUI webpate to manage connections, metrics and dashboard 
-* Bastion-style internal access workflows
+### VPN
+- Automated WireGuard installation
+- QR-code mobile onboarding
+- Peer creation and removal scripts
+- Live peer configuration updates
+- Split Tunnel, Enterprise and Full Tunnel routing modes
+- Automatic public IP detection with fallback providers
+- IP forwarding and NAT configuration
+
+### Security
+- SSH restricted to allowlisted IPs
+- Terraform validation prevents accidental 0.0.0.0/0 SSH access
+- Secrets excluded from Git
+- GitHub Actions secret scanning
+- Monitoring
+- Automated Prometheus installation
+- Automated Grafana installation
+- Node Exporter integration
+- Custom WireGuard metrics exporter
+- Automatic metrics collection via cron
+
+
+### Monitoring Stack
+
+The monitoring stack consists of:
+```
+WireGuard
+      │
+      ▼
+Custom Metrics Exporter
+      │
+      ▼
+Node Exporter Textfile Collector
+      │
+      ▼
+Prometheus
+      │
+      ▼
+Grafana Dashboard
+```
+
+### Metrics collected include:
+
+- Connected peers
+- Configured peers
+- Upload bandwidth
+- Download bandwidth
+- Total bytes transferred
+- Latest peer handshake
+- Allowed IP configuration
+
+
+### VPN dashboard showing:
+- Connected peers
+- Total peers
+- Upload/download traffic
+- Handshake status
+- Live VPN statistics
+
+### CI/CD
+- ShellCheck
+- Terraform validation
+- Secret leak detection
 
 ---
 
@@ -86,7 +163,20 @@ Routes all internet traffic through the VPN gateway.
 
 ## Validation
 
-The VPN was validated using a mobile WireGuard client.
+The infrastructure was tested end-to-end using Android and Linux WireGuard clients, validating VPN connectivity, routing modes, peer management, and the monitoring stack.
+
+### Successfully Tested
+
+- Android WireGuard client
+- Linux WireGuard client
+- QR-based onboarding
+- Split tunnel routing
+- Full tunnel routing
+- VPN-to-server communication
+- Internal HTTP service access
+- Prometheus metric collection
+- Grafana dashboards
+- Live WireGuard traffic monitoring
 
 ## Infrastructure & Security
 
@@ -102,14 +192,6 @@ The configuration enforces this at the variable validation level — `0.0.0.0/0`
 - Private keys, `.pem` files, and `.tfvars` are excluded via `.gitignore`
 - CI pipeline scans for accidentally committed secrets on every push
 
-#### Testing confirmed:
-
-- Successful VPN peer onboarding via QR code
-- Secure client-to-server communication
-- Split tunnel functionality
-- Access to an internal HTTP service hosted on the VPN server
-- WireGuard peer handshakes and traffic transfer verification
-
 ## Technologies Used
 - AWS EC2, S3
 - WireGuard
@@ -119,6 +201,8 @@ The configuration enforces this at the variable validation level — `0.0.0.0/0`
 - Linux Networking
 - Terraform (Infrastructure as Code)
 - GitHub Actions (CI validation)
+- Prometheus
+- Grafana
 
 ## Example Use Cases
 - Secure employee remote access
@@ -130,11 +214,14 @@ The configuration enforces this at the variable validation level — `0.0.0.0/0`
 
 ## Future Improvements
 
-* Internal DNS routing
-* Split-tunnel optimization
-* Monitoring and traffic analytics
-* Multi-region VPN deployment
-* High availability failover nodes
+- Internal DNS server
+- Web management portal
+- VPN user management
+- Email-based peer provisioning
+- High Availability deployment
+- Multi-region VPN gateways
+- Alertmanager integration
+- VPN usage analytics
 
 ## Screenshots
 
@@ -142,6 +229,7 @@ The configuration enforces this at the variable validation level — `0.0.0.0/0`
 ![setup](./screenshots/setup.png)
 ![QR](./screenshots/QR.png)
 ![split tunnel](./screenshots/Split_Tunnel.png)
+![dashboard](./screenshots/Dashboard.png)
 
 ## Disclaimer
 
