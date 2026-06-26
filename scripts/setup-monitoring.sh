@@ -24,7 +24,14 @@ GRAFANA_GPG_KEY="https://apt.grafana.com/gpg.key"
 
 echo "[+] Updating packages..."
 apt update -y
-apt install -y curl wget adduser libfontconfig1 gnupg2 apt-transport-https software-properties-common
+apt install -y \
+    curl \
+    wget \
+    adduser \
+    libfontconfig1 \
+    gnupg2 \
+    apt-transport-https \
+    software-properties-common
 
 # ─────────────────────────────────────────────
 # 1. Install Prometheus
@@ -46,6 +53,9 @@ cp -r /tmp/prometheus-${PROMETHEUS_VERSION}.linux-amd64/console_libraries /etc/p
 
 chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
 chmod +x /usr/local/bin/prometheus /usr/local/bin/promtool
+
+chown prometheus:prometheus /usr/local/bin/prometheus
+chown prometheus:prometheus /usr/local/bin/promtool
 
 # Prometheus config
 cat > /etc/prometheus/prometheus.yml << 'EOF'
@@ -87,7 +97,7 @@ ExecStart=/usr/local/bin/prometheus \
     --storage.tsdb.path /var/lib/prometheus/ \
     --web.console.templates=/etc/prometheus/consoles \
     --web.console.libraries=/etc/prometheus/console_libraries \
-    --web.listen-address=0.0.0.0:9090 \
+    --web.listen-address=10.0.0.1:9090 \
     --storage.tsdb.retention.time=15d
 Restart=always
 
@@ -146,7 +156,7 @@ wget -q "https://github.com/MindFlavor/prometheus_wireguard_exporter/releases/do
     chmod +x /usr/local/bin/prometheus_wireguard_exporter
 }
 
-if [[ -f /tmp/wg_exporter.deb ]]; then
+if [[ -s /tmp/wg_exporter.deb ]]; then
     dpkg -i /tmp/wg_exporter.deb
 else
     cat > /etc/systemd/system/prometheus_wireguard_exporter.service << 'EOF'
@@ -183,6 +193,14 @@ echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stab
 apt update -y
 apt install -y grafana
 
+mkdir -p /etc/systemd/system/grafana-server.service.d
+
+cat > /etc/systemd/system/grafana-server.service.d/wg0.conf << 'EOF'
+[Unit]
+After=wg-quick@wg0.service
+Requires=wg-quick@wg0.service
+EOF
+
 # Grafana config — bind to VPN interface only
 sed -i 's/;http_addr =/http_addr = 10.0.0.1/' /etc/grafana/grafana.ini
 sed -i 's/;http_port = 3000/http_port = 3000/' /etc/grafana/grafana.ini
@@ -196,7 +214,7 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://localhost:9090
+    url: http://10.0.0.1:9090
     isDefault: true
     editable: false
 EOF
@@ -211,12 +229,21 @@ echo "[+] Starting all services..."
 
 systemctl daemon-reload
 
+echo "[+] Validating Prometheus config..."
+
+promtool check config /etc/prometheus/prometheus.yml
+
 systemctl enable prometheus && systemctl restart prometheus
 systemctl enable node_exporter && systemctl restart node_exporter
 systemctl enable prometheus_wireguard_exporter && systemctl restart prometheus_wireguard_exporter
 systemctl enable grafana-server && systemctl restart grafana-server
 
-sleep 3
+for i in {1..30}; do
+    if curl -sf http://10.0.0.1:3000/api/health >/dev/null 2>&1; then
+        break
+    fi
+    sleep 2
+done
 
 # ─────────────────────────────────────────────
 # 6. Verify
@@ -224,18 +251,54 @@ sleep 3
 echo ""
 echo "[+] Verifying services..."
 
-check_service() {
-    if systemctl is-active --quiet "$1"; then
-        echo "  [✓] $1 is running"
+echo ""
+echo "[+] Running health checks..."
+
+health_check() {
+    local name="$1"
+    local cmd="$2"
+
+    if eval "$cmd" >/dev/null 2>&1; then
+        echo "  [✓] $name healthy"
     else
-        echo "  [✗] $1 failed to start"
+        echo "  [✗] $name unhealthy"
     fi
 }
 
-check_service prometheus
-check_service node_exporter
-check_service prometheus_wireguard_exporter
-check_service grafana-server
+health_check "Prometheus" \
+    "curl -sf http://10.0.0.1:9090/-/healthy"
+
+health_check "Grafana" \
+    "curl -sf http://10.0.0.1:3000/api/health"
+
+health_check "Node Exporter" \
+    "curl -sf http://localhost:9100/metrics"
+
+health_check "WireGuard Exporter" \
+    "curl -sf http://localhost:9586/metrics"
+
+
+echo ""
+echo "[+] Configuring firewall..."
+
+if command -v ufw >/dev/null 2>&1; then
+
+    ufw allow 51820/udp
+
+    ufw allow from 10.0.0.0/24 to any port 3000 proto tcp
+
+    ufw allow from 10.0.0.0/24 to any port 9090 proto tcp
+
+    ufw allow from 10.0.0.0/24 to any port 9100 proto tcp
+
+    ufw allow from 10.0.0.0/24 to any port 9586 proto tcp
+
+    ufw allow 22/tcp
+    ufw allow 51820/udp
+
+    ufw --force enable
+
+fi
 
 echo ""
 echo "====================================================="
@@ -259,4 +322,4 @@ echo "  3. Import the WireGuard dashboard:"
 echo "     Dashboards > Import > Upload JSON file"
 echo "     File: monitoring/dashboards/wireguard-dashboard.json"
 echo ""
-echo "====================================================="s
+echo "====================================================="
