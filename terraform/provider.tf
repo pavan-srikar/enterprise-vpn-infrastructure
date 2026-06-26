@@ -23,11 +23,11 @@ terraform {
   # }
 
   backend "s3" {
-     bucket  = "enterprise-vpn-tfstate-473157802330"
-     key     = "vpn-infrastructure/terraform.tfstate"
-     region  = "us-east-1"
-     encrypt = true
-   }
+    bucket  = "enterprise-vpn-tfstate-473157802330"
+    key     = "vpn-infrastructure/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+  }
 }
 
 provider "aws" {
