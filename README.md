@@ -25,22 +25,9 @@ terraform apply
 sudo ./scripts/setup-tf-backend.sh
 ```
 
-## Traffic 
-
-```
-Remote Device 
-│ 
-▼ 
-WireGuard VPN Tunnel 
-│ 
-▼ 
-AWS EC2 VPN Gateway 
-│ 
-├────────► Internal Services 
-├────────► Monitoring Stack 
-└────────► Private Resources
-```
 ## Architecture
+
+![Infrastructure](./diagrams/VPN-Infrastructure.png)
 
 ```
                 Internet
@@ -60,7 +47,22 @@ AWS EC2 VPN Gateway
         VPN Clients (10.0.0.x)
 ```
 
-![Infrastructure](./diagrams/VPN-Infrastructure.png)
+
+## Traffic 
+
+```
+Remote Device 
+│ 
+▼ 
+WireGuard VPN Tunnel 
+│ 
+▼ 
+AWS EC2 VPN Gateway 
+│ 
+├────────► Internal Services 
+├────────► Monitoring Stack 
+└────────► Private Resources
+```
 
 ## Features
 
